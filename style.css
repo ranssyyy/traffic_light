@@ -9,23 +9,21 @@ h1 {
   color: #333;
 }
 
-.buttons button {
-  padding: 15px 25px;
+.buttons {
+  margin: 30px 0;
+}
+
+button {
+  font-size: 20px;
+  padding: 15px 30px;
   margin: 10px;
-  font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   color: white;
 }
 
-#red { background: #e74c3c; }
-#yellow { background: #f1c40f; color: black; }
-#green { background: #2ecc71; }
-#auto { background: #3498db; }
-
-#status {
-  margin-top: 30px;
-  font-size: 18px;
-  color: #555;
-}
+#red { background-color: #e74c3c; }
+#yellow { background-color: #f1c40f; color: #333; }
+#green { background-color: #2ecc71; }
+#auto { background-color: #3498db; }
