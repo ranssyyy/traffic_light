@@ -1,0 +1,127 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+
+// WiFi credentials
+const char* ssid = "ransy";
+const char* pass = "rans091023";
+
+// Supabase credentials
+const char* URL  = "https://tzspnjmksbfloelujzjc.supabase.co/rest/v1/traffic_light?select=state&order=id.desc&limit=1";
+const char* KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6c3Buam1rc2JmbG9lbHVqempjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4ODExNDYsImV4cCI6MjA4ODQ1NzE0Nn0.6ymNLXSgyE50BlU1cgD4czM2R5S1jhpHN5ykfr2Q0rc";
+
+// Pin definitions
+#define RED 5
+#define YEL 16
+#define GRN 19
+
+// Polling
+unsigned long lastPoll = 0;
+const unsigned long POLL_INTERVAL = 1500; // check Supabase every 1.5s
+
+// Auto mode variables
+unsigned long lastChange = 0;
+int autoStep = 0;
+
+// Current state
+String state = "";
+
+// ─────────────────────────────
+// Helper function to set LEDs
+void setLights(bool r, bool y, bool g) {
+  digitalWrite(RED, r ? HIGH : LOW);
+  digitalWrite(YEL, y ? HIGH : LOW);
+  digitalWrite(GRN, g ? HIGH : LOW);
+}
+
+// Apply manual state (red, yellow, green)
+void applyState(String s) {
+  if (s == "red")    setLights(true, false, false);
+  else if (s == "yellow") setLights(false, true, false);
+  else if (s == "green")  setLights(false, false, true);
+  else if (s == "auto")   setLights(true, false, false); // start with red in auto
+  Serial.println("State: " + s);
+}
+
+// Fetch the latest state from Supabase
+String getState() {
+  HTTPClient http;
+  http.begin(URL);
+  http.addHeader("apikey", KEY);
+  http.addHeader("Authorization", String("Bearer ") + KEY);
+
+  int httpCode = http.GET();
+  String result = "";
+  if (httpCode == 200) {
+    String payload = http.getString();
+    StaticJsonDocument<128> doc;
+    if (deserializeJson(doc, payload) == DeserializationError::Ok) {
+      if (doc.size() > 0) {
+        result = doc[0]["state"] | "";
+      }
+    }
+  }
+  http.end();
+  return result;
+}
+
+// ─────────────────────────────
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED, OUTPUT);
+  pinMode(YEL, OUTPUT);
+  pinMode(GRN, OUTPUT);
+
+  setLights(false,false,false);
+
+  WiFi.begin(ssid, pass);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected! IP: " + WiFi.localIP().toString());
+
+  // Fetch initial state
+  state = getState();
+  applyState(state);
+  lastChange = millis();
+}
+
+// ─────────────────────────────
+void loop() {
+  unsigned long now = millis();
+
+  // 1️⃣ Poll Supabase for latest state every POLL_INTERVAL
+  if (now - lastPoll > POLL_INTERVAL && WiFi.status() == WL_CONNECTED) {
+    lastPoll = now;
+    String newState = getState();
+    if (newState != "" && newState != state) {
+      state = newState;
+      applyState(state);
+      autoStep = 0;        // reset auto cycle
+      lastChange = now;
+    }
+  }
+
+  // 2️⃣ Auto mode (non-blocking)
+  if (state == "auto") {
+    if (autoStep == 0 && now - lastChange >= 5000) { // red → green
+      setLights(false,false,true);
+      autoStep = 1;
+      lastChange = now;
+    } else if (autoStep == 1 && now - lastChange >= 5000) { // green → yellow
+      setLights(false,true,false);
+      autoStep = 2;
+      lastChange = now;
+    } else if (autoStep == 2 && now - lastChange >= 2000) { // yellow → red
+      setLights(true,false,false);
+      autoStep = 0;
+      lastChange = now;
+    }
+  }
+
+  // 3️⃣ Optional: small delay to avoid busy looping
+  delay(50);
+}
