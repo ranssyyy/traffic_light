@@ -1,23 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Traffic Light Dashboard</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ransy Traffic Light</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet"/>
 </head>
 <body>
-<h1>Traffic Light Control</h1>
 
-<div class="buttons">
-  <button id="red">RED</button>
-  <button id="yellow">YELLOW</button>
-  <button id="green">GREEN</button>
-  <button id="auto">AUTO</button>
-</div>
+  <!-- BACKGROUND LAYERS -->
+  <div class="city-bg">
+    <div class="stars"></div>
+    <div class="buildings">
+      <div class="building b1"></div>
+      <div class="building b2"></div>
+      <div class="building b3"></div>
+      <div class="building b4"></div>
+      <div class="building b5"></div>
+      <div class="building b6"></div>
+      <div class="building b7"></div>
+      <div class="building b8"></div>
+    </div>
+  </div>
 
-<div id="status">Current State: --</div>
+  <!-- MAIN LAYOUT -->
+  <div class="dashboard-wrapper">
 
-<script type="module" src="script.js"></script>
+    <!-- HEADER -->
+    <header class="dash-header">
+      <div class="header-left">
+        <span class="header-icon">⬡</span>
+        <div>
+          <h1 class="dash-title">RANSY TRAFFIC LIGHT</h1>
+          <p class="dash-sub">Smart Intersection Control System</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-badge" id="statusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">CONNECTING...</span>
+        </div>
+        <div class="clock" id="clockDisplay"></div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="dash-main">
+
+      <!-- LEFT: TRAFFIC LIGHT -->
+      <section class="panel light-panel">
+        <div class="panel-label">SIGNAL STATE</div>
+
+        <div class="traffic-light-housing">
+          <div class="tl-pole"></div>
+          <div class="tl-arm"></div>
+          <div class="tl-box">
+            <div class="tl-light red-light"   id="redLight">
+              <div class="tl-bulb red-bulb"></div>
+              <div class="tl-glow red-glow"></div>
+            </div>
+            <div class="tl-light yellow-light" id="yellowLight">
+              <div class="tl-bulb yellow-bulb"></div>
+              <div class="tl-glow yellow-glow"></div>
+            </div>
+            <div class="tl-light green-light"  id="greenLight">
+              <div class="tl-bulb green-bulb"></div>
+              <div class="tl-glow green-glow"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="current-state-display">
+          <div class="state-label">CURRENT STATE</div>
+          <div class="state-value" id="currentStateValue">—</div>
+        </div>
+
+        <!-- AUTO CYCLE INDICATOR -->
+        <div class="auto-indicator" id="autoIndicator">
+          <span class="auto-pulse"></span>
+          AUTO MODE ACTIVE
+        </div>
+      </section>
+
+      <!-- CENTER: ROAD / INTERSECTION -->
+      <section class="panel road-panel">
+        <div class="panel-label">INTERSECTION VIEW</div>
+
+        <div class="road-scene">
+
+          <!-- ROAD LEFT-TO-RIGHT (main lane) -->
+          <div class="road road-ltr">
+            <!-- Mini traffic light for Lane A -->
+            <div class="mini-tl mini-tl-ltr" id="miniTlLtr">
+              <div class="mini-bulb mini-red"    id="miniRedLtr"></div>
+              <div class="mini-bulb mini-yellow" id="miniYellowLtr"></div>
+              <div class="mini-bulb mini-green"  id="miniGreenLtr"></div>
+            </div>
+            <div class="road-lines">
+              <div class="dash-line dl1"></div>
+              <div class="dash-line dl2"></div>
+              <div class="dash-line dl3"></div>
+              <div class="dash-line dl4"></div>
+            </div>
+            <div class="lane-label">→ LANE A</div>
+            <!-- Cars L→R: emoji naturally face right, no flip needed -->
+            <div class="car car-ltr c1" id="car_ltr_1">🚗</div>
+            <div class="car car-ltr c2" id="car_ltr_2">🚕</div>
+            <div class="car car-ltr c3" id="car_ltr_3">🚙</div>
+          </div>
+
+          <!-- CROSSWALK / INTERSECTION CENTER -->
+          <div class="intersection-center">
+            <div class="crosswalk cw-top"></div>
+            <div class="crosswalk cw-bot"></div>
+            <div class="center-circle">
+              <span class="center-icon" id="centerIcon">⬡</span>
+            </div>
+          </div>
+
+          <!-- ROAD RIGHT-TO-LEFT (opposing lane) -->
+          <div class="road road-rtl">
+            <!-- Mini traffic light for Lane B -->
+            <div class="mini-tl mini-tl-rtl" id="miniTlRtl">
+              <div class="mini-bulb mini-red"    id="miniRedRtl"></div>
+              <div class="mini-bulb mini-yellow" id="miniYellowRtl"></div>
+              <div class="mini-bulb mini-green"  id="miniGreenRtl"></div>
+            </div>
+            <div class="road-lines">
+              <div class="dash-line dl1"></div>
+              <div class="dash-line dl2"></div>
+              <div class="dash-line dl3"></div>
+              <div class="dash-line dl4"></div>
+            </div>
+            <div class="lane-label">← LANE B</div>
+            <!-- Cars R→L: scaleX(-1) applied via CSS to flip emoji to face left -->
+            <div class="car car-rtl c1" id="car_rtl_1">🚗</div>
+            <div class="car car-rtl c2" id="car_rtl_2">🚕</div>
+            <div class="car car-rtl c3" id="car_rtl_3">🚙</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT: CONTROLS -->
+      <section class="panel control-panel">
+        <div class="panel-label">SIGNAL CONTROL</div>
+
+        <div class="control-buttons">
+          <button class="ctrl-btn btn-red"    data-state="red"    onclick="setState('red')">
+            <span class="btn-icon">●</span>
+            <span class="btn-text">RED</span>
+            <span class="btn-sub">Stop All</span>
+          </button>
+          <button class="ctrl-btn btn-yellow" data-state="yellow" onclick="setState('yellow')">
+            <span class="btn-icon">●</span>
+            <span class="btn-text">YELLOW</span>
+            <span class="btn-sub">Slow Down</span>
+          </button>
+          <button class="ctrl-btn btn-green"  data-state="green"  onclick="setState('green')">
+            <span class="btn-icon">●</span>
+            <span class="btn-text">GREEN</span>
+            <span class="btn-sub">Lane A Go</span>
+          </button>
+          <button class="ctrl-btn btn-auto"   data-state="auto"   onclick="setState('auto')">
+            <span class="btn-icon">⟳</span>
+            <span class="btn-text">AUTO</span>
+            <span class="btn-sub">Auto Cycle</span>
+          </button>
+          <button class="ctrl-btn btn-off"    data-state="off"    onclick="setState('off')">
+            <span class="btn-icon">◉</span>
+            <span class="btn-text">OFF</span>
+            <span class="btn-sub">System Off</span>
+          </button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-block">
+          <div class="stat-row">
+            <span class="stat-label">LAST UPDATE</span>
+            <span class="stat-val" id="lastUpdate">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">LANE A STATUS</span>
+            <span class="stat-val" id="laneAStatus">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">LANE B STATUS</span>
+            <span class="stat-val" id="laneBStatus">—</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">DB INSERTS</span>
+            <span class="stat-val" id="insertCount">0</span>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- TRAFFIC LOGS -->
+    <div class="traffic-logs-panel">
+      <div class="logs-header">
+        <span class="logs-title">📋 TRAFFIC LOGS</span>
+        <span class="logs-badge" id="logCount">0 entries</span>
+        <button class="logs-clear-btn" onclick="clearLogs()">CLEAR</button>
+      </div>
+      <div class="logs-body" id="logsBody">
+        <div class="log-row log-init">
+          <span class="log-ts" id="initTs"></span>
+          <span class="log-dot log-dot-info"></span>
+          <span class="log-msg">System initialized. Connecting to Supabase...</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard-wrapper -->
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
